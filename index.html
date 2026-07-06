@@ -115,6 +115,10 @@ button{font-family:var(--font-body);cursor:pointer}
   font-size:clamp(2.2rem,9vw,3.6rem);
   letter-spacing:-.02em;
 }
+.price-now.tick-up{animation:tickUp .7s ease}
+.price-now.tick-down{animation:tickDown .7s ease}
+@keyframes tickUp{0%{color:var(--pump);text-shadow:0 0 22px rgba(67,217,122,.55)}100%{color:var(--bone);text-shadow:none}}
+@keyframes tickDown{0%{color:var(--dump);text-shadow:0 0 22px rgba(255,92,77,.55)}100%{color:var(--bone);text-shadow:none}}
 .chg{
   display:inline-block;
   font-family:var(--font-mono);
@@ -442,7 +446,7 @@ button{font-family:var(--font-body);cursor:pointer}
       <div class="stat"><div class="lbl">Profit / Loss</div><div class="val" id="calcPl">—</div></div>
       <div class="stat"><div class="lbl">Return</div><div class="val" id="calcPct">—</div></div>
     </div>
-    <div class="calc-note">Uses the live price above — updates automatically every 30s. Numbers stay in your browser only. NFA.</div>
+    <div class="calc-note">Uses the live price above — updates automatically every 5s. Numbers stay in your browser only. NFA.</div>
   </div>
 
   <div class="grid-2">
@@ -460,7 +464,7 @@ button{font-family:var(--font-body);cursor:pointer}
           <a id="dsLink" href="https://dexscreener.com/solana" target="_blank" rel="noopener" style="font-family:var(--font-mono);font-size:.75rem">full chart ↗</a>
         </div>
         <canvas id="candles" aria-label="ANSEM price candlestick chart"></canvas>
-        <div class="chart-note">candles: GeckoTerminal &middot; stats: DexScreener &middot; auto-refresh 30s</div>
+        <div class="chart-note">candles: GeckoTerminal &middot; stats: DexScreener &middot; price refreshes every 5s</div>
       </div>
     </div>
 
@@ -541,6 +545,7 @@ function short(a){ return a ? a.slice(0,4)+"…"+a.slice(-4) : ""; }
 let pair = null;        // best ANSEM pair from dexscreener
 let tf = "1H";
 let candleData = [];
+let lastPrice = null;   // for the live tick flash
 
 /* ---------- dexscreener: find + refresh the real Black Bull ---------- */
 async function findPair(){
@@ -576,7 +581,16 @@ async function refreshPair(){
 function renderPair(){
   if(!pair) return;
   const p = pair;
-  $("price").textContent = fmtPrice(p.priceUsd);
+  // live tick flash: green when price moved up since the last poll, red when down
+  const newPrice = parseFloat(p.priceUsd);
+  const priceEl = $("price");
+  if(!isNaN(newPrice) && lastPrice!=null && newPrice!==lastPrice){
+    priceEl.classList.remove("tick-up","tick-down");
+    void priceEl.offsetWidth; // restart the animation
+    priceEl.classList.add(newPrice>lastPrice ? "tick-up" : "tick-down");
+  }
+  if(!isNaN(newPrice)) lastPrice = newPrice;
+  priceEl.textContent = fmtPrice(p.priceUsd);
   const c24 = p.priceChange && p.priceChange.h24;
   const chgEl = $("chg24");
   if(c24!=null){
@@ -915,7 +929,7 @@ $("copyBtn").addEventListener("click", async ()=>{
   await refreshPair();
   loadCandles();
   fetchFeed(); // auto-load the daily herd report (served from a 24h server-side cache)
-  setInterval(refreshPair, 30000);
+  setInterval(refreshPair, 5000);
   setInterval(loadCandles, 60000);
 })();
 </script>
