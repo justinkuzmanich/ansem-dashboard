@@ -210,6 +210,7 @@ button{font-family:var(--font-body);cursor:pointer}
 .stat .val{font-family:var(--font-mono);font-weight:700;font-size:clamp(1.05rem,4vw,1.4rem);margin-top:.25rem}
 .stat .hint{font-size:.72rem;color:var(--bone-dim);font-family:var(--font-mono);margin-top:.15rem}
 .stat.gold::before{background:var(--gold)}
+.bs-wide{grid-column:span 2}
 
 /* buys vs sells bar */
 .bs-bar{height:10px;border-radius:999px;overflow:hidden;background:var(--ink-3);display:flex;margin-top:.5rem}
@@ -335,6 +336,7 @@ button{font-family:var(--font-body);cursor:pointer}
 /* ---------- desktop ---------- */
 @media (min-width:820px){
   .stats{grid-template-columns:repeat(4,1fr)}
+  .bs-wide{grid-column:span 4}
   .links{grid-template-columns:repeat(4,1fr)}
   .calc-grid{grid-template-columns:1fr 1fr}
   .calc-out{grid-template-columns:repeat(4,1fr)}
@@ -414,13 +416,15 @@ button{font-family:var(--font-body);cursor:pointer}
   <!-- STATS -->
   <div class="sec"><span class="horn">🐂</span><h2>Ring Stats</h2></div>
   <div class="stats" id="stats">
+    <div class="stat gold"><div class="lbl">Holders</div><div class="val" id="holders">—</div></div>
     <div class="stat gold"><div class="lbl">Market Cap</div><div class="val" id="mcap">—</div></div>
     <div class="stat"><div class="lbl">24h Volume</div><div class="val" id="vol">—</div></div>
     <div class="stat"><div class="lbl">Liquidity</div><div class="val" id="liq">—</div></div>
     <div class="stat"><div class="lbl">24h Txns</div><div class="val" id="txns">—</div></div>
     <div class="stat"><div class="lbl">1h Change</div><div class="val" id="chg1">—</div></div>
     <div class="stat"><div class="lbl">6h Change</div><div class="val" id="chg6">—</div></div>
-    <div class="stat gold" style="grid-column:span 2">
+    <div class="stat"><div class="lbl">Top 10 Wallets Hold</div><div class="val" id="top10">—</div></div>
+    <div class="stat gold bs-wide">
       <div class="lbl">24h Buys vs Sells</div>
       <div class="bs-bar"><div class="b" id="barB" style="width:50%"></div><div class="s" id="barS" style="width:50%"></div></div>
       <div class="bs-legend"><span class="buys" id="buys">— buys</span><span class="sells" id="sells">— sells</span></div>
@@ -679,6 +683,21 @@ $("heroCaCopy").addEventListener("click", async ()=>{
   setTimeout(()=>b.textContent="copy",1500);
 });
 
+/* ---------- geckoterminal holders ---------- */
+async function loadHolders(){
+  if(!pair) return;
+  try{
+    const r = await fetch("https://api.geckoterminal.com/api/v2/networks/solana/tokens/"+pair.baseToken.address+"/info",
+      {headers:{Accept:"application/json;version=20230302"}});
+    if(!r.ok) throw new Error("gt "+r.status);
+    const j = await r.json();
+    const h = j.data && j.data.attributes && j.data.attributes.holders;
+    if(h && h.count!=null) $("holders").textContent = Number(h.count).toLocaleString();
+    const t = h && h.distribution_percentage && h.distribution_percentage.top_10;
+    if(t!=null) $("top10").textContent = Number(t).toFixed(1)+"%";
+  }catch(e){ /* leave the previous value in place */ }
+}
+
 /* ---------- geckoterminal candles ---------- */
 const TF = {
   "15m":{path:"minute", agg:15, limit:96},
@@ -928,9 +947,11 @@ $("copyBtn").addEventListener("click", async ()=>{
 (async function(){
   await refreshPair();
   loadCandles();
+  loadHolders();
   fetchFeed(); // auto-load the daily herd report (served from a 24h server-side cache)
   setInterval(refreshPair, 5000);
   setInterval(loadCandles, 60000);
+  setInterval(loadHolders, 300000); // holders move slowly — refresh every 5 min
 })();
 </script>
 </body>
