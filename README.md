@@ -22,7 +22,7 @@ netlify.toml                    tells Netlify where the functions live
    git add .
    git commit -m "ANSEM Black Bull dashboard"
    git branch -M main
-   git remote add origin https://github.com/YOUR_USERNAME/ansem-dashboard.git
+   git remote add origin https://github.com/justinkuzmanich/ansem-dashboard.git
    git push -u origin main
    ```
 
@@ -62,3 +62,8 @@ netlify.toml                    tells Netlify where the functions live
 ## Disclaimers
 
 NFA / DYOR. Data from public APIs and may lag or fail.
+
+## Live deployment
+
+Production: https://ansem-dashboard.netlify.app — pushes to `main` auto-deploy
+(GitHub Actions pings a Netlify build hook; Netlify clones and builds `main`).
