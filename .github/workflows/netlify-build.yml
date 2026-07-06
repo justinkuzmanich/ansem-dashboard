@@ -13,10 +13,14 @@ on:
   push:
     branches:
       - main
+      - dev
 
 jobs:
   trigger-netlify:
     runs-on: ubuntu-latest
     steps:
       - name: POST Netlify build hook
-        run: curl -sS -X POST -d '{}' "https://api.netlify.com/build_hooks/6a4b0bd80673f913deb9ba79"
+        # trigger_branch tells Netlify which branch to build: pushes to main
+        # publish the production site; pushes to dev publish the preview at
+        # https://dev--ansem-dashboard.netlify.app
+        run: curl -sS -X POST -d '{}' "https://api.netlify.com/build_hooks/6a4b0bd80673f913deb9ba79?trigger_branch=${{ github.ref_name }}"
