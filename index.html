@@ -53,8 +53,9 @@ button{font-family:var(--font-body);cursor:pointer}
   padding:.35rem 0;
   border-bottom:3px solid var(--gold);
 }
-.tape-inner{display:inline-block;animation:tape 28s linear infinite;padding-left:100%}
-@keyframes tape{to{transform:translateX(-100%)}}
+.tape-inner{display:inline-flex;animation:tape 30s linear infinite}
+.tape-seg{display:inline-block}
+@keyframes tape{to{transform:translateX(-50%)}}
 .tape b{color:var(--bone)}
 
 /* ---------- shell ---------- */
@@ -66,7 +67,15 @@ button{font-family:var(--font-body);cursor:pointer}
   padding:2.2rem 0 1.6rem;
   text-align:center;
 }
-.hero-bull{width:min(190px,52vw);margin:0 auto .4rem;display:block}
+.hero-bull{
+  width:min(190px,52vw);margin:0 auto .4rem;display:block;
+  filter:drop-shadow(0 0 14px rgba(245,185,66,.45)) drop-shadow(0 0 40px rgba(230,59,46,.28));
+  animation:bullGlow 3.2s ease-in-out infinite;
+}
+@keyframes bullGlow{
+  0%,100%{filter:drop-shadow(0 0 14px rgba(245,185,66,.45)) drop-shadow(0 0 40px rgba(230,59,46,.28))}
+  50%{filter:drop-shadow(0 0 24px rgba(245,185,66,.75)) drop-shadow(0 0 60px rgba(230,59,46,.45))}
+}
 .snort{transform-origin:center;animation:snort 3.2s ease-in-out infinite}
 @keyframes snort{0%,100%{opacity:0;transform:translateY(0) scale(.7)}12%{opacity:.85}30%{opacity:0;transform:translateY(-9px) scale(1.25)}}
 .hero h1{
@@ -120,6 +129,51 @@ button{font-family:var(--font-body);cursor:pointer}
 .chg.down{background:rgba(255,92,77,.14);color:var(--dump)}
 .pair-meta{color:var(--bone-dim);font-size:.85rem;margin-top:.45rem;font-family:var(--font-mono)}
 .pair-meta img{width:18px;height:18px;border-radius:50%;vertical-align:-4px;margin-right:.35rem}
+
+/* ---------- hero contract address ---------- */
+.hero-ca{
+  margin-top:.8rem;
+  font-family:var(--font-mono);font-size:.78rem;color:var(--bone-dim);
+  display:flex;align-items:center;justify-content:center;gap:.5rem;flex-wrap:wrap;
+}
+.hero-ca code{
+  color:var(--gold);word-break:break-all;
+  background:var(--ink-2);border:1px dashed var(--ink-3);border-radius:8px;
+  padding:.3rem .6rem;max-width:min(92vw,34rem);
+}
+.hero-ca button{
+  background:none;border:1px solid var(--ink-3);color:var(--bone-dim);
+  border-radius:8px;padding:.28rem .65rem;font-family:var(--font-mono);font-size:.72rem;
+}
+.hero-ca button:hover{border-color:var(--gold);color:var(--gold)}
+
+/* ---------- buy / tweet CTAs ---------- */
+.cta-row{display:flex;justify-content:center;gap:.8rem;flex-wrap:wrap;margin:1.7rem 0 .2rem}
+.cta-btn{
+  display:inline-flex;align-items:center;gap:.55rem;
+  font-family:var(--font-display);letter-spacing:.08em;text-transform:uppercase;
+  font-size:1.05rem;padding:.85rem 1.7rem;border-radius:999px;text-decoration:none;
+  transition:transform .08s ease;
+}
+.cta-btn:active{transform:translateY(3px)}
+.cta-buy{background:var(--matador);color:var(--bone);box-shadow:0 4px 0 #8f1f16}
+.cta-buy:active{box-shadow:0 1px 0 #8f1f16}
+.cta-tweet{background:var(--gold);color:var(--ink);box-shadow:0 4px 0 #a87b1e}
+.cta-tweet:active{box-shadow:0 1px 0 #a87b1e}
+
+/* ---------- position calculator ---------- */
+.calc-grid{display:grid;gap:.8rem}
+.calc label{
+  font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--bone-dim);display:block;margin-bottom:.3rem;
+}
+.calc input{
+  width:100%;background:var(--ink);border:1px solid var(--ink-3);border-radius:10px;
+  color:var(--bone);padding:.65rem .8rem;font-family:var(--font-mono);font-size:1rem;
+}
+.calc input:focus{border-color:var(--gold);outline:none}
+.calc-out{display:grid;grid-template-columns:repeat(2,1fr);gap:.7rem;margin-top:1rem}
+.calc-note{color:var(--bone-dim);font-size:.72rem;font-family:var(--font-mono);margin-top:.6rem}
 
 /* ---------- section headers ---------- */
 .sec{
@@ -278,6 +332,8 @@ button{font-family:var(--font-body);cursor:pointer}
 @media (min-width:820px){
   .stats{grid-template-columns:repeat(4,1fr)}
   .links{grid-template-columns:repeat(4,1fr)}
+  .calc-grid{grid-template-columns:1fr 1fr}
+  .calc-out{grid-template-columns:repeat(4,1fr)}
   .grid-2{display:grid;grid-template-columns:1.55fr 1fr;gap:1.6rem;align-items:start}
   #candles{height:400px}
   .hero{padding-top:3rem}
@@ -287,8 +343,8 @@ button{font-family:var(--font-body);cursor:pointer}
 <body>
 
 <div class="tape" aria-hidden="true">
-  <div class="tape-inner" id="tape">
-    $ANSEM &nbsp;🐂&nbsp; THE BLACK BULL CHARGES FORWARD &nbsp;🐂&nbsp; RETURN TO TRADITION &nbsp;🐂&nbsp; LOADING LIVE DATA… &nbsp;🐂&nbsp;
+  <div class="tape-inner" id="tapeInner">
+    <span class="tape-seg">$ANSEM &nbsp;🐂&nbsp; THE BLACK BULL CHARGES FORWARD &nbsp;🐂&nbsp; LOADING LIVE DATA… &nbsp;🐂&nbsp; $ANSEM &nbsp;🐂&nbsp; THE BLACK BULL CHARGES FORWARD &nbsp;🐂&nbsp; LOADING LIVE DATA… &nbsp;🐂&nbsp; $ANSEM &nbsp;🐂&nbsp; THE BLACK BULL CHARGES FORWARD &nbsp;🐂&nbsp; LOADING LIVE DATA… &nbsp;🐂&nbsp;</span><span class="tape-seg">$ANSEM &nbsp;🐂&nbsp; THE BLACK BULL CHARGES FORWARD &nbsp;🐂&nbsp; LOADING LIVE DATA… &nbsp;🐂&nbsp; $ANSEM &nbsp;🐂&nbsp; THE BLACK BULL CHARGES FORWARD &nbsp;🐂&nbsp; LOADING LIVE DATA… &nbsp;🐂&nbsp; $ANSEM &nbsp;🐂&nbsp; THE BLACK BULL CHARGES FORWARD &nbsp;🐂&nbsp; LOADING LIVE DATA… &nbsp;🐂&nbsp;</span>
   </div>
 </div>
 
@@ -328,17 +384,28 @@ button{font-family:var(--font-body);cursor:pointer}
     </svg>
     <h1>$ANSEM</h1>
     <div class="sub">The Black Bull &middot; Solana</div>
+    <div class="hero-ca">
+      <span>CA</span>
+      <code id="heroCa">loading contract address…</code>
+      <button id="heroCaCopy" title="Copy contract address">copy</button>
+    </div>
     <div class="price-block">
       <div class="price-row">
         <div>
           <span class="price-now" id="price">$—.——</span>
           <span class="chg up" id="chg24">…</span>
         </div>
-        <img class="ansem-pic" src="data:image/webp;base64,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" alt="Ansem">
+        <a href="https://x.com/blknoiz06" target="_blank" rel="noopener" title="Ansem on X — @blknoiz06"><img class="ansem-pic" src="data:image/webp;base64,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" alt="Ansem — open his X profile"></a>
       </div>
       <div class="pair-meta" id="pairMeta">finding the strongest herd…</div>
     </div>
   </header>
+
+  <!-- BUY / TWEET CTAs -->
+  <div class="cta-row">
+    <a class="cta-btn cta-buy" href="https://axiom.trade/@tradenow7" target="_blank" rel="noopener">🐂 Buy $ANSEM</a>
+    <a class="cta-btn cta-tweet" id="tweetBtn" href="https://twitter.com/intent/tweet?text=I%27m%20bullish%20on%20%24ANSEM%20%F0%9F%90%82" target="_blank" rel="noopener">🐦 Tweet it</a>
+  </div>
 
   <!-- STATS -->
   <div class="sec"><span class="horn">🐂</span><h2>Ring Stats</h2></div>
@@ -354,6 +421,28 @@ button{font-family:var(--font-body);cursor:pointer}
       <div class="bs-bar"><div class="b" id="barB" style="width:50%"></div><div class="s" id="barS" style="width:50%"></div></div>
       <div class="bs-legend"><span class="buys" id="buys">— buys</span><span class="sells" id="sells">— sells</span></div>
     </div>
+  </div>
+
+  <!-- POSITION CALCULATOR -->
+  <div class="sec"><span class="horn">🧮</span><h2>Your Position</h2></div>
+  <div class="card calc">
+    <div class="calc-grid">
+      <div>
+        <label for="calcTokens">$ANSEM you hold</label>
+        <input id="calcTokens" type="number" inputmode="decimal" min="0" step="any" placeholder="e.g. 1000000">
+      </div>
+      <div>
+        <label for="calcBuy">Average buy price (USD, optional)</label>
+        <input id="calcBuy" type="number" inputmode="decimal" min="0" step="any" placeholder="e.g. 0.05">
+      </div>
+    </div>
+    <div class="calc-out">
+      <div class="stat gold"><div class="lbl">Value now</div><div class="val" id="calcValue">—</div></div>
+      <div class="stat"><div class="lbl">You paid</div><div class="val" id="calcCost">—</div></div>
+      <div class="stat"><div class="lbl">Profit / Loss</div><div class="val" id="calcPl">—</div></div>
+      <div class="stat"><div class="lbl">Return</div><div class="val" id="calcPct">—</div></div>
+    </div>
+    <div class="calc-note">Uses the live price above — updates automatically every 30s. Numbers stay in your browser only. NFA.</div>
   </div>
 
   <div class="grid-2">
@@ -401,7 +490,7 @@ button{font-family:var(--font-body);cursor:pointer}
           <button id="keySave" class="copy-btn" style="padding:.55rem 1rem;font-size:.8rem">Use key</button>
         </div>
       </div>
-      <div class="feed-status" id="feedStatus">Live AI scan of fresh $ANSEM news &amp; CT chatter — hit the button.</div>
+      <div class="feed-status" id="feedStatus">AI scan of fresh $ANSEM news &amp; CT chatter — gathered once a day.</div>
       <div class="feed" id="feed"></div>
     </div>
   </div>
@@ -516,14 +605,64 @@ function renderPair(){
   $("dsLink").href = p.url || ("https://dexscreener.com/solana/"+p.pairAddress);
   $("lnkDex").href = $("dsLink").href;
   $("lnkScan").href = "https://solscan.io/token/"+p.baseToken.address;
-  // ticker tape
-  $("tape").innerHTML =
+  // hero contract address + tweet button
+  $("heroCa").textContent = p.baseToken.address;
+  $("tweetBtn").href = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(
+    "I'm bullish on $ANSEM 🐂 The Black Bull on Solana. Contract address: " + p.baseToken.address
+  );
+  // ticker tape — one segment string, repeated to fill the bar edge to edge
+  const seg =
     "$ANSEM &nbsp;🐂&nbsp; " + fmtPrice(p.priceUsd) +
     " &nbsp;🐂&nbsp; 24H <b>" + (c24>0?"+":"") + Number(c24||0).toFixed(1) + "%</b>" +
     " &nbsp;🐂&nbsp; MCAP <b>" + fmtUsd(p.marketCap||p.fdv) + "</b>" +
     " &nbsp;🐂&nbsp; VOL <b>" + fmtUsd(p.volume&&p.volume.h24) + "</b>" +
-    " &nbsp;🐂&nbsp; THE BLACK BULL CHARGES FORWARD &nbsp;🐂&nbsp; RETURN TO TRADITION &nbsp;🐂&nbsp;";
+    " &nbsp;🐂&nbsp; THE BLACK BULL CHARGES FORWARD &nbsp;🐂&nbsp; ";
+  document.querySelectorAll(".tape-seg").forEach(el=>{ el.innerHTML = seg.repeat(3); });
+  renderCalc();
 }
+
+/* ---------- position calculator ---------- */
+function renderCalc(){
+  const tokens = parseFloat($("calcTokens").value);
+  const buy = parseFloat($("calcBuy").value);
+  const price = pair ? parseFloat(pair.priceUsd) : NaN;
+  const value = (tokens>0 && !isNaN(price)) ? tokens*price : null;
+  const cost  = (tokens>0 && buy>0) ? tokens*buy : null;
+  $("calcValue").textContent = value!=null ? fmtUsd(value) : "—";
+  $("calcCost").textContent  = cost!=null ? fmtUsd(cost) : "—";
+  const plEl = $("calcPl"), pctEl = $("calcPct");
+  if(value!=null && cost!=null){
+    const pl = value-cost, ret = cost>0 ? pl/cost*100 : 0;
+    plEl.textContent  = (pl>=0?"+":"−") + fmtUsd(Math.abs(pl));
+    pctEl.textContent = (ret>=0?"+":"−") + Math.abs(ret).toFixed(1) + "%";
+    plEl.style.color = pctEl.style.color = pl>=0 ? "var(--pump)" : "var(--dump)";
+  }else{
+    plEl.textContent = pctEl.textContent = "—";
+    plEl.style.color = pctEl.style.color = "";
+  }
+}
+["calcTokens","calcBuy"].forEach(id=>{
+  const el = $(id);
+  el.value = localStorage.getItem("ansem_"+id) || "";
+  el.addEventListener("input", ()=>{
+    localStorage.setItem("ansem_"+id, el.value);
+    renderCalc();
+  });
+});
+
+/* ---------- hero CA copy ---------- */
+$("heroCaCopy").addEventListener("click", async ()=>{
+  const ca = $("heroCa").textContent;
+  if(!ca || /loading/i.test(ca)) return;
+  try{ await navigator.clipboard.writeText(ca); }
+  catch(e){
+    const ta=document.createElement("textarea");
+    ta.value=ca;document.body.appendChild(ta);ta.select();
+    document.execCommand("copy");ta.remove();
+  }
+  const b=$("heroCaCopy"); b.textContent="copied!";
+  setTimeout(()=>b.textContent="copy",1500);
+});
 
 /* ---------- geckoterminal candles ---------- */
 const TF = {
@@ -693,8 +832,9 @@ async function callDirect(ca){
 async function fetchFeed(){
   const btn = $("feedBtn"), status = $("feedStatus"), feed = $("feed");
   btn.disabled = true;
-  status.innerHTML = '<span class="loading-bull">🐂</span> stampeding across the web for fresh intel…';
+  status.innerHTML = '<span class="loading-bull">🐂</span> rounding up today’s herd report…';
   feed.innerHTML = "";
+  let cachedAt = null;
   try{
     const ca = pair ? pair.baseToken.address : "";
     let data;
@@ -706,6 +846,7 @@ async function fetchFeed(){
       // 2) proxy unreachable (inside Claude.ai or local file) → direct call
       data = await callDirect(ca);
     }
+    if(data.cachedAt) cachedAt = data.cachedAt;
     let text = (data.content||[])
       .filter(b=>b.type==="text")
       .map(b=>b.text).join("\n")
@@ -724,7 +865,9 @@ async function fetchFeed(){
       return '<div class="post"><span class="tag '+tag+'">'+tag+'</span>'+
         '<h3>'+safe(it.title)+'</h3><p>'+safe(it.summary)+'</p>'+link+'</div>';
     }).join("");
-    status.textContent = "Fresh from the pasture · "+new Date().toLocaleTimeString();
+    status.textContent = cachedAt
+      ? "Daily herd report · gathered "+new Date(cachedAt).toLocaleString()+" · refreshes once a day"
+      : "Fresh from the pasture · "+new Date().toLocaleTimeString();
   }catch(e){
     const msg = e && e.message ? e.message : "feed error";
     if(/failed to fetch|networkerror|load failed/i.test(msg) && !apiKey){
@@ -736,7 +879,7 @@ async function fetchFeed(){
     }
   }finally{
     btn.disabled = false;
-    btn.textContent = "🐂 Round up again";
+    btn.textContent = "🐂 Reload today's report";
   }
 }
 
@@ -770,6 +913,7 @@ $("copyBtn").addEventListener("click", async ()=>{
 (async function(){
   await refreshPair();
   loadCandles();
+  fetchFeed(); // auto-load the daily herd report (served from a 24h server-side cache)
   setInterval(refreshPair, 30000);
   setInterval(loadCandles, 60000);
 })();

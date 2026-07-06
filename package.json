@@ -1,0 +1,8 @@
+{
+  "name": "ansem-dashboard",
+  "private": true,
+  "description": "Static $ANSEM dashboard; dependency is bundled into the Netlify herd function",
+  "dependencies": {
+    "@netlify/blobs": "^10.7.9"
+  }
+}
