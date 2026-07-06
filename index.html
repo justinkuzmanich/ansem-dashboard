@@ -608,8 +608,9 @@ function renderPair(){
   // hero contract address + tweet button
   $("heroCa").textContent = p.baseToken.address;
   $("tweetBtn").href = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(
-    "I'm bullish on $ANSEM 🐂 The Black Bull on Solana. Contract address: " + p.baseToken.address
-  ) + "&url=" + encodeURIComponent("https://ansem-dashboard.netlify.app");
+    "I'm bullish on $ANSEM 🐂 The Black Bull on Solana. Contract address: " + p.baseToken.address +
+    "\n\nView $ANSEM Dashboard: https://ansem-dashboard.netlify.app"
+  );
   // ticker tape — one segment string, repeated to fill the bar edge to edge
   const seg =
     "$ANSEM &nbsp;🐂&nbsp; <b>" + fmtPrice(p.priceUsd) + "</b>" +
