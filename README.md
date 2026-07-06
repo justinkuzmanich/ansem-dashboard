@@ -1,69 +1,100 @@
 # $ANSEM — The Black Bull Dashboard
 
-Live memecoin dashboard for $ANSEM on Solana. Price, stats, and candles come from
-public APIs (DexScreener + GeckoTerminal, no keys needed). The AI-powered Herd
-Report runs through a Netlify serverless function so the Anthropic API key never
-touches the browser or the repo.
+Live memecoin dashboard for $ANSEM on Solana.
+
+**Production:** https://ansem-dashboard.netlify.app
+**Preview (dev branch):** https://dev--ansem-dashboard.netlify.app
+
+## Features
+
+- **Live price** — polled from DexScreener every 5 seconds, with a green/red
+  flash when the price ticks up or down. Stats (market cap, volume, liquidity,
+  txns, buys vs sells) refresh on the same cadence.
+- **Holders + concentration** — holder count and top-10 wallet percentage from
+  GeckoTerminal, refreshed every 5 minutes.
+- **Candlestick chart** — GeckoTerminal OHLCV (15m / 1H / 4H / 1D), redrawn
+  every minute.
+- **AI Herd Report** — Claude does a live web search for $ANSEM news and CT
+  chatter, auto-loaded on page open. Served through a Netlify function that
+  caches the result in Netlify Blobs for 24 hours, so the Anthropic API is
+  called **at most once per day total**, no matter how many visitors load or
+  refresh the page.
+- **Position calculator** — visitors enter their holdings (and optional average
+  buy price) to see live value, cost basis, P/L, and return %. Values persist
+  in the visitor's own browser (localStorage) across visits.
+- **Buy / Tweet CTAs** — Buy $ANSEM (axiom.trade) and a pre-filled bullish
+  tweet with the contract address and a dashboard link.
+- **Full contract address** shown in the hero (with copy button) and under the
+  price, always pulled live from the deepest-liquidity pair.
+- Edge-to-edge ticker tape, glowing bull with nostril steam, Ansem photo
+  linking to his X profile, donation QR, quick links (DexScreener, Solscan,
+  X search).
 
 ## Structure
 
 ```
-index.html                      the entire dashboard (self-contained)
-netlify/functions/herd.js       serverless proxy — holds the API key server-side
-netlify.toml                    tells Netlify where the functions live
+index.html                            the entire dashboard (self-contained)
+netlify/functions/herd.mjs            serverless proxy — Anthropic key stays
+                                      server-side; 24h Netlify Blobs news cache
+netlify.toml                          publish dir + functions dir
+package.json                          @netlify/blobs (bundled into the function)
+.github/workflows/netlify-build.yml   pings Netlify's build hook on push
 ```
 
-## Deploy (GitHub → Netlify)
+## Workflow: edit → preview → live
 
-1. **Push to GitHub**
-   ```bash
-   cd ansem-deploy
-   git init
-   git add .
-   git commit -m "ANSEM Black Bull dashboard"
-   git branch -M main
-   git remote add origin https://github.com/justinkuzmanich/ansem-dashboard.git
-   git push -u origin main
-   ```
+```
+dev   ──►  https://dev--ansem-dashboard.netlify.app   (preview)
+main  ──►  https://ansem-dashboard.netlify.app        (production)
+```
 
-2. **Connect to Netlify**
-   - Netlify → Add new site → Import an existing project → pick the repo
-   - Build settings: no build command, publish directory `.` (netlify.toml handles the rest)
+1. Commit changes to the **`dev`** branch and push — the preview URL rebuilds
+   automatically (~60s).
+2. Review the preview. Iterate on `dev` until happy.
+3. Merge `dev` into **`main`** and push — production rebuilds automatically.
 
-3. **Add the API key (the important part)**
-   - Site configuration → Environment variables → Add a variable
-   - Key: `ANTHROPIC_API_KEY`
-   - Value: your key from https://console.anthropic.com/settings/keys
-   - Scope: Functions (or all scopes is fine)
-   - Redeploy the site after adding it (Deploys → Trigger deploy)
+Deploys are triggered by a GitHub Actions workflow that POSTs a Netlify build
+hook with the pushed branch name; Netlify then clones the repo over HTTPS and
+builds that branch. The hook URL can only trigger builds — rotate it in
+Netlify under Build & deploy → Build hooks if ever needed.
 
-4. Done. The Herd Report button now works for every visitor, and the key is
-   never visible in the page source, the repo, or the browser network tab.
+## Configuration
+
+- **`ANTHROPIC_API_KEY`** (Netlify → Project configuration → Environment
+  variables): set as a secret for the **Production** and **Branch deploys**
+  contexts. This is the only secret; it never appears in the repo or the page.
+- The news cache lives in the Netlify Blobs store `herd-cache` (key `latest`)
+  and is shared by production and branch deploys — delete the blob or wait 24h
+  to force a fresh report.
 
 ## Key safety notes
 
 - **Never** paste the key into index.html or commit it anywhere in the repo.
 - The proxy's prompt is hardcoded server-side and only accepts a validated
   Solana contract address as input, so the endpoint can't be repurposed as a
-  general Claude proxy. Each click costs one small API call (~1000 tokens max).
+  general Claude proxy. The 24h cache means even hammering the endpoint costs
+  at most one small API call (~1000 tokens) per day.
 - If you ever suspect the key leaked, revoke it in the Anthropic console and
   set a new one in Netlify env vars — no code changes needed.
-- Optional hardening if the site gets popular: enable Netlify rate limiting on
-  `/.netlify/functions/herd`, or add a simple per-IP counter.
 
 ## How the feed picks its data path
 
-1. Tries `/.netlify/functions/herd` (production path, key server-side)
+1. Tries `/.netlify/functions/herd` (production path, key server-side,
+   24h-cached)
 2. If unreachable (running inside Claude.ai or as a local file), calls the
    Anthropic API directly (keyless works inside Claude.ai)
 3. As a last resort it shows a panel to paste a key manually (memory-only,
    for local testing)
 
+## Data sources
+
+| Data | Source | Refresh |
+|---|---|---|
+| Price, stats, buys/sells | DexScreener (public API) | 5s |
+| Candles | GeckoTerminal (public API) | 60s |
+| Holders, top-10 % | GeckoTerminal (public API) | 5 min |
+| News / Herd Report | Claude web search via Netlify function | 24h cache |
+
 ## Disclaimers
 
 NFA / DYOR. Data from public APIs and may lag or fail.
-
-## Live deployment
-
-Production: https://ansem-dashboard.netlify.app — pushes to `main` auto-deploy
-(GitHub Actions pings a Netlify build hook; Netlify clones and builds `main`).
