@@ -127,7 +127,7 @@ button{font-family:var(--font-body);cursor:pointer}
 }
 .chg.up{background:rgba(67,217,122,.14);color:var(--pump)}
 .chg.down{background:rgba(255,92,77,.14);color:var(--dump)}
-.pair-meta{color:var(--bone-dim);font-size:.85rem;margin-top:.45rem;font-family:var(--font-mono)}
+.pair-meta{color:var(--bone-dim);font-size:.85rem;margin-top:.45rem;font-family:var(--font-mono);word-break:break-all;padding:0 .8rem}
 .pair-meta img{width:18px;height:18px;border-radius:50%;vertical-align:-4px;margin-right:.35rem}
 
 /* ---------- hero contract address ---------- */
@@ -584,8 +584,8 @@ function renderPair(){
     chgEl.className = "chg "+(c24>=0?"up":"down");
   }
   const icon = p.info && p.info.imageUrl ? '<img src="'+p.info.imageUrl+'" alt="">' : "";
-  $("pairMeta").innerHTML = icon + (p.baseToken.name||"ANSEM") + " · " + p.dexId +
-    " · CA " + short(p.baseToken.address);
+  $("pairMeta").innerHTML = icon + (p.baseToken.name||"ANSEM") +
+    " · CA " + p.baseToken.address;
 
   $("mcap").textContent = fmtUsd(p.marketCap || p.fdv);
   $("vol").textContent  = fmtUsd(p.volume && p.volume.h24);
