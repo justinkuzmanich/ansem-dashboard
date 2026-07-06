@@ -1026,6 +1026,25 @@ $("keySave").addEventListener("click", ()=>{
   fetchFeed();
 });
 
+/* ---------- analytics events (GA4, production domain only) ---------- */
+function track(name, params){
+  try{
+    if(/(^|\.)ansemdash\.com$/.test(location.hostname) && typeof gtag==="function"){
+      gtag("event", name, params||{});
+    }
+  }catch(e){}
+}
+document.querySelector(".cta-buy").addEventListener("click", ()=>track("buy_click",{destination:"axiom"}));
+$("tweetBtn").addEventListener("click", ()=>track("tweet_click"));
+$("heroCaCopy").addEventListener("click", ()=>track("ca_copy",{location:"hero"}));
+$("copyBtn").addEventListener("click", ()=>track("donate_copy"));
+$("feedBtn").addEventListener("click", ()=>track("feed_refresh"));
+document.querySelector('a[title^="Ansem on X"]').addEventListener("click", ()=>track("ansem_profile_click"));
+let calcTracked = false;
+["calcTokens","calcBuy"].forEach(id=>$(id).addEventListener("input", ()=>{
+  if(!calcTracked){ calcTracked = true; track("calc_use"); }
+}));
+
 new QRCode($("qr"), {
   text: DONATE_ADDR, width:150, height:150,
   colorDark:"#0e0c0a", colorLight:"#f2ead9",
