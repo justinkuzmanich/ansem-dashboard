@@ -620,6 +620,9 @@ button{font-family:var(--font-body);cursor:pointer}
 
 <script>
 const DONATE_ADDR = "BiVVp3AWTbGxp9LvxR37wud8f3akeTZVbeQaPYUCjQS";
+// The one true Black Bull. Pinned so a copycat token with the same symbol and
+// spoofed liquidity can never hijack the dashboard (it happened once).
+const ANSEM_CA = "9cRCn9rGT8V2imeM2BaKs13yhMEais3ruM3rPvTGpump";
 const $ = id => document.getElementById(id);
 
 /* ---------- helpers ---------- */
@@ -652,15 +655,13 @@ let lastPrice = null;   // for the live tick flash
 
 /* ---------- dexscreener: find + refresh the real Black Bull ---------- */
 async function findPair(){
-  const r = await fetch("https://api.dexscreener.com/latest/dex/search?q=ANSEM");
+  // query by the pinned contract address — only real Black Bull pools come back
+  const r = await fetch("https://api.dexscreener.com/latest/dex/tokens/"+ANSEM_CA);
   if(!r.ok) throw new Error("dexscreener "+r.status);
   const j = await r.json();
-  const cands = (j.pairs||[]).filter(p =>
-    p.chainId==="solana" &&
-    p.baseToken && p.baseToken.symbol && p.baseToken.symbol.toUpperCase()==="ANSEM"
-  );
+  const cands = (j.pairs||[]).filter(p => p.chainId==="solana" && p.baseToken && p.baseToken.address===ANSEM_CA);
   if(!cands.length) throw new Error("no ANSEM pairs found");
-  // the real Black Bull = deepest liquidity
+  // best view of the token = its deepest-liquidity pool
   cands.sort((a,b)=>((b.liquidity&&b.liquidity.usd)||0)-((a.liquidity&&a.liquidity.usd)||0));
   return cands[0];
 }
@@ -699,6 +700,8 @@ function renderPair(){
   if(c24!=null){
     chgEl.textContent = (c24>0?"+":"")+Number(c24).toFixed(2)+"% (24h)";
     chgEl.className = "chg "+(c24>=0?"up":"down");
+  }else{
+    chgEl.textContent = "—";
   }
   const icon = p.info && p.info.imageUrl ? '<img src="'+p.info.imageUrl+'" alt="">' : "";
   $("pairMeta").innerHTML = icon +
@@ -721,11 +724,11 @@ function renderPair(){
   // wire links
   $("dsLink").href = p.url || ("https://dexscreener.com/solana/"+p.pairAddress);
   $("lnkDex").href = $("dsLink").href;
-  $("lnkScan").href = "https://solscan.io/token/"+p.baseToken.address;
-  // hero contract address + tweet button
-  $("heroCa").textContent = p.baseToken.address;
+  $("lnkScan").href = "https://solscan.io/token/"+ANSEM_CA;
+  // hero contract address + tweet button (pinned CA — never trust API data here)
+  $("heroCa").textContent = ANSEM_CA;
   $("tweetBtn").href = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(
-    "I'm bullish on $ANSEM 🐂 The Black Bull on Solana. Contract address: " + p.baseToken.address +
+    "I'm bullish on $ANSEM 🐂 The Black Bull on Solana. Contract address: " + ANSEM_CA +
     "\n\nView $ANSEM Dashboard: https://ansemdash.com"
   );
   // ticker tape — one segment string, repeated to fill the bar edge to edge
@@ -786,7 +789,7 @@ $("heroCaCopy").addEventListener("click", async ()=>{
 async function loadHolders(){
   if(!pair) return;
   try{
-    const r = await fetch("https://api.geckoterminal.com/api/v2/networks/solana/tokens/"+pair.baseToken.address+"/info",
+    const r = await fetch("https://api.geckoterminal.com/api/v2/networks/solana/tokens/"+ANSEM_CA+"/info",
       {headers:{Accept:"application/json;version=20230302"}});
     if(!r.ok) throw new Error("gt "+r.status);
     const j = await r.json();
@@ -970,7 +973,7 @@ async function fetchFeed(){
   feed.innerHTML = "";
   let cachedAt = null;
   try{
-    const ca = pair ? pair.baseToken.address : "";
+    const ca = ANSEM_CA;
     let data;
     // 1) Netlify serverless proxy (API key lives server-side in env vars)
     try{
