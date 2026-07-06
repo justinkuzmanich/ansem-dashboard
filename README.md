@@ -2,7 +2,7 @@
 
 Live memecoin dashboard for $ANSEM on Solana.
 
-**Production:** https://ansem-dashboard.netlify.app
+**Production:** https://ansemdash.com
 **Preview (dev branch):** https://dev--ansem-dashboard.netlify.app
 
 ## Features
@@ -45,7 +45,7 @@ package.json                          @netlify/blobs (bundled into the function)
 
 ```
 dev   ──►  https://dev--ansem-dashboard.netlify.app   (preview)
-main  ──►  https://ansem-dashboard.netlify.app        (production)
+main  ──►  https://ansemdash.com        (production)
 ```
 
 1. Commit changes to the **`dev`** branch and push — the preview URL rebuilds
