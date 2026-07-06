@@ -1,0 +1,22 @@
+name: Trigger Netlify build
+
+# Netlify normally hears about pushes through its GitHub App. This repo is
+# wired to Netlify without the App (public-repo HTTPS cloning), so this
+# workflow pokes the site's build hook instead: Netlify then pulls the latest
+# commit, builds, and publishes.
+#
+# The build hook URL can only trigger builds — it grants no access to the
+# site, code, or environment variables. Rotate it anytime in Netlify under
+# Project configuration -> Build & deploy -> Build hooks.
+
+on:
+  push:
+    branches:
+      - claude/ansem-dashboard-netlify-setup-08a176
+
+jobs:
+  trigger-netlify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: POST Netlify build hook
+        run: curl -sS -X POST -d '{}' "https://api.netlify.com/build_hooks/6a4b0bd80673f913deb9ba79"
