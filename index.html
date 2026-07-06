@@ -4,6 +4,39 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>$ANSEM — The Black Bull Dashboard</title>
+<meta name="description" content="Live $ANSEM price, chart, holders and daily AI news. $ANSEM 'The Black Bull' is a memecoin on the Solana blockchain connected to crypto trader Ansem (@blknoiz06). Learn what it is and how to buy it.">
+<meta property="og:title" content="$ANSEM — The Black Bull Dashboard">
+<meta property="og:description" content="Live price, chart, holders and daily AI news for $ANSEM, The Black Bull memecoin on Solana.">
+<meta property="og:url" content="https://ansem-dashboard.netlify.app">
+<meta property="og:type" content="website">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is $ANSEM?",
+      "acceptedAnswer": {"@type": "Answer", "text": "$ANSEM, known as The Black Bull, is a memecoin on the Solana blockchain — a community-driven cryptocurrency with no company behind it, traded on decentralized exchanges. It launched on Pump.fun in June 2026."}
+    },
+    {
+      "@type": "Question",
+      "name": "Who is Ansem?",
+      "acceptedAnswer": {"@type": "Answer", "text": "Ansem (@blknoiz06) is one of the most-followed crypto traders on X, best known for calling Solana early and for his influence on Solana memecoin culture. The $ANSEM token is a community-created tribute to him — he has engaged with it and airdropped tokens to followers, but it is not an official project run by him."}
+    },
+    {
+      "@type": "Question",
+      "name": "How do I buy $ANSEM?",
+      "acceptedAnswer": {"@type": "Answer", "text": "You need a Solana wallet (such as Phantom) with some SOL in it. Swap SOL for $ANSEM on a decentralized exchange or trading platform, and always verify the contract address before you buy."}
+    },
+    {
+      "@type": "Question",
+      "name": "Is $ANSEM safe to invest in?",
+      "acceptedAnswer": {"@type": "Answer", "text": "Memecoins are extremely volatile and speculative — prices can go to zero. Nothing on this site is financial advice. Verify the contract address, do your own research, and never invest money you cannot afford to lose."}
+    }
+  ]
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -178,6 +211,17 @@ button{font-family:var(--font-body);cursor:pointer}
 .calc input:focus{border-color:var(--gold);outline:none}
 .calc-out{display:grid;grid-template-columns:repeat(2,1fr);gap:.7rem;margin-top:1rem}
 .calc-note{color:var(--bone-dim);font-size:.72rem;font-family:var(--font-mono);margin-top:.6rem}
+
+/* ---------- about / faq ---------- */
+.about p{color:var(--bone-dim);font-size:.92rem;margin-bottom:.85rem}
+.about p strong{color:var(--bone)}
+.faq details{
+  background:var(--ink);border:1px solid var(--ink-3);border-radius:10px;
+  padding:.8rem 1rem;margin-top:.6rem;
+}
+.faq summary{cursor:pointer;font-weight:700;font-size:.92rem;color:var(--bone)}
+.faq details[open] summary{color:var(--gold)}
+.faq details p{margin:.6rem 0 0;font-size:.88rem}
 
 /* ---------- section headers ---------- */
 .sec{
@@ -469,6 +513,42 @@ button{font-family:var(--font-body);cursor:pointer}
         </div>
         <canvas id="candles" aria-label="ANSEM price candlestick chart"></canvas>
         <div class="chart-note">candles: GeckoTerminal &middot; stats: DexScreener &middot; price refreshes every 5s</div>
+      </div>
+
+      <!-- ABOUT / FAQ -->
+      <div class="sec"><span class="horn">📖</span><h2>What is $ANSEM?</h2></div>
+      <div class="card about">
+        <p><strong>$ANSEM, known as "The Black Bull,"</strong> is a memecoin on the Solana
+          blockchain — a community-driven cryptocurrency with no company behind it, traded
+          entirely on decentralized exchanges. It launched on Pump.fun in June 2026 and runs
+          on Solana, a blockchain known for fast, sub-cent transactions.</p>
+        <p><strong>Ansem (@blknoiz06)</strong> is one of the most-followed crypto traders on X,
+          best known for calling Solana early and for his influence over Solana memecoin
+          culture. The $ANSEM token is a community-created tribute to him — he has engaged
+          with it and airdropped tokens to followers, but it is not an official project run
+          by him.</p>
+        <div class="faq">
+          <details>
+            <summary>How do I buy $ANSEM?</summary>
+            <p>You need a Solana wallet (such as <a href="https://phantom.com" target="_blank" rel="noopener">Phantom</a>)
+              with some SOL in it — SOL is Solana's main coin, and you can buy it on any major
+              exchange. Then swap SOL for $ANSEM using the <strong>Buy $ANSEM</strong> button at
+              the top of this page, and always check that the contract address matches the one
+              shown above before you trade.</p>
+          </details>
+          <details>
+            <summary>Is $ANSEM safe to invest in?</summary>
+            <p>Memecoins are extremely volatile and speculative — prices can (and often do) go
+              to zero. Nothing on this page is financial advice. Verify the contract address,
+              do your own research, and never invest money you can't afford to lose.</p>
+          </details>
+          <details>
+            <summary>What is a contract address?</summary>
+            <p>Every token on Solana has one unique on-chain ID — the long code shown at the top
+              of this page. Scammers launch fake tokens with the same name, so the address is
+              the only reliable way to know you're buying the real Black Bull.</p>
+          </details>
+        </div>
       </div>
     </div>
 
