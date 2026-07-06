@@ -12,7 +12,7 @@ name: Trigger Netlify build
 on:
   push:
     branches:
-      - claude/ansem-dashboard-netlify-setup-08a176
+      - main
 
 jobs:
   trigger-netlify:
