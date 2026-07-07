@@ -708,6 +708,9 @@ function renderPair(){
     "$ANSEM is a cryptocurrency on the Solana blockchain. The code above is its unique contract address — always verify it before you buy.";
 
   $("mcap").textContent = fmtUsd(p.marketCap || p.fdv);
+  // live market cap in the browser tab title
+  const mcNow = p.marketCap || p.fdv;
+  if(mcNow) document.title = "$ANSEM " + fmtUsd(mcNow) + " MC | The Black Bull on Solana";
   $("vol").textContent  = fmtUsd(p.volume && p.volume.h24);
   $("liq").textContent  = fmtUsd(p.liquidity && p.liquidity.usd);
   const tx = p.txns && p.txns.h24;
