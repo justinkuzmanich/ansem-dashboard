@@ -45,7 +45,8 @@ export default async (req) => {
     "Do ONE web search for the latest news and X/Twitter chatter about the $ANSEM Solana memecoin 'The Black Bull'" +
     (ca ? " (contract " + ca + ")" : "") + ". " +
     "Then output ONLY a raw JSON array — no markdown, no backticks, no preamble, no trailing text — of 3 to 4 objects: " +
-    '[{"title":"short headline (max 10 words)","summary":"one short sentence","source":"site or @handle","url":"https://...","tag":"news"}]. ' +
+    '[{"title":"short headline (max 10 words)","summary":"one short sentence","source":"site or @handle","url":"https://...","tag":"news","date":"YYYY-MM-DD"}]. ' +
+    '"date" is the article or post\'s publish date, taken from the search result — use your best reading of it, and if a story truly has no determinable date, omit the "date" field entirely rather than guessing. ' +
     'Allowed tag values: "news", "tweet", "alpha". Keep every field brief so the array is small. ' +
     "When multiple sources cover the same story, prefer larger, well-known outlets (e.g. CoinDesk, Cointelegraph, The Block, Decrypt, Bloomberg) and high-profile X accounts — but still include smaller sources when they have the freshest or only coverage. " +
     "If nothing recent is found, return one item saying so.";
