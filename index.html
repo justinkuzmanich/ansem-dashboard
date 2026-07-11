@@ -554,8 +554,8 @@ button{font-family:var(--font-body);cursor:pointer}
       <div class="stat"><div class="lbl">Profit / Loss</div><div class="val" id="calcPl">—</div></div>
       <div class="stat"><div class="lbl">Return</div><div class="val" id="calcPct">—</div></div>
     </div>
-    <div class="calc-note">Uses the live price above — updates automatically every 5s. Numbers stay in your browser only. NFA.</div>
-    <button class="flex-btn" id="flexBtn" style="display:none">📸 Flex your position</button>
+    <div class="calc-note">Uses the live price above — updates automatically every 5s. Numbers stay in your browser only. Enter your holdings above to unlock a shareable flex card. NFA.</div>
+    <button class="flex-btn" id="flexBtn" disabled>📸 Flex your position — enter your holdings above</button>
   </div>
 
   <div class="grid-2">
@@ -819,7 +819,9 @@ function renderCalc(){
     plEl.textContent = pctEl.textContent = "—";
     plEl.style.color = pctEl.style.color = "";
   }
-  $("flexBtn").style.display = (value!=null) ? "block" : "none";
+  const flexBtn = $("flexBtn");
+  flexBtn.disabled = value==null;
+  flexBtn.textContent = value!=null ? "📸 Flex your position" : "📸 Flex your position — enter your holdings above";
 }
 ["calcTokens","calcBuy"].forEach(id=>{
   const el = $(id);
