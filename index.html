@@ -943,21 +943,22 @@ function parseFeedJson(text){
   }
   return null;
 }
-$("feedBtn").addEventListener("click", fetchFeed);
+$("feedBtn").addEventListener("click", ()=>fetchFeed(true));
 let apiKey = ""; // held in memory only — never saved anywhere
+let lastTitles = []; // last rendered headlines, for "find different sources" on refresh
 
-async function callHerdProxy(ca){
+async function callHerdProxy(ca, refresh){
   const r = await fetch("/.netlify/functions/herd",{
     method:"POST",
     headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({ca})
+    body:JSON.stringify({ca, refresh})
   });
   const data = await r.json();
   if(data.error) throw Object.assign(new Error("api: "+(data.error.message||data.error.type)), {isApi:true});
   if(!r.ok) throw new Error("proxy http "+r.status);
   return data;
 }
-async function callDirect(ca){
+async function callDirect(ca, refresh){
   const headers = {"Content-Type":"application/json"};
   if(apiKey){
     headers["x-api-key"] = apiKey;
@@ -971,7 +972,8 @@ async function callDirect(ca){
       model:"claude-sonnet-4-6",
       max_tokens:1000,
       messages:[{role:"user",content:
-        "Do ONE web search for the latest news and X/Twitter chatter about the $ANSEM Solana memecoin 'The Black Bull'"+(ca?" (contract "+ca+")":"")+". "+
+        "Do ONE web search for the latest news and X/Twitter chatter about the $ANSEM Solana memecoin 'The Black Bull'"+(ca?" (contract "+ca+")":"")+"."+
+        (refresh && lastTitles.length ? " Avoid repeating these stories already shown: "+lastTitles.map(t=>'"'+t+'"').join(", ")+" — search for different or additional coverage instead. If genuinely nothing else recent exists, it's fine to include one of them again." : "")+" "+
         "Then output ONLY a raw JSON array — no markdown, no backticks, no preamble, no trailing text — of 3 to 4 objects: "+
         '[{"title":"short headline (max 10 words)","summary":"one short sentence","source":"site or @handle","url":"https://...","tag":"news","date":"YYYY-MM-DD"}]. '+
         '"date" is the article or post\'s publish date, taken from the search result — use your best reading of it, and if a story truly has no determinable date, omit the "date" field entirely rather than guessing. '+
@@ -987,22 +989,22 @@ async function callDirect(ca){
   return data;
 }
 
-async function fetchFeed(){
+async function fetchFeed(refresh){
   const btn = $("feedBtn"), status = $("feedStatus"), feed = $("feed");
   btn.disabled = true;
-  status.innerHTML = '<span class="loading-bull">🐂</span> rounding up today’s herd report…';
-  feed.innerHTML = "";
+  status.innerHTML = '<span class="loading-bull">🐂</span> '+(refresh ? "rounding up new sources…" : "rounding up today’s herd report…");
+  if(!refresh) feed.innerHTML = "";
   let cachedAt = null;
   try{
     const ca = ANSEM_CA;
     let data;
     // 1) Netlify serverless proxy (API key lives server-side in env vars)
     try{
-      data = await callHerdProxy(ca);
+      data = await callHerdProxy(ca, !!refresh);
     }catch(proxyErr){
       if(proxyErr.isApi) throw proxyErr; // real API error relayed by the proxy — surface it
       // 2) proxy unreachable (inside Claude.ai or local file) → direct call
-      data = await callDirect(ca);
+      data = await callDirect(ca, !!refresh);
     }
     if(data.cachedAt) cachedAt = data.cachedAt;
     let text = (data.content||[])
@@ -1015,6 +1017,7 @@ async function fetchFeed(){
       items = [{title:"Herd Report", summary:text.slice(0,400), source:"", url:"", tag:"news"}];
     }
     if(!items || !items.length) throw new Error("no usable response");
+    lastTitles = items.map(it=>it.title).filter(Boolean).slice(0,6);
     feed.innerHTML = items.map(it=>{
       const tag = ["news","tweet","alpha"].includes(it.tag)?it.tag:"news";
       const safe = s => String(s||"").replace(/</g,"&lt;");
@@ -1025,9 +1028,15 @@ async function fetchFeed(){
       return '<div class="post"><span class="tag '+tag+'">'+tag+'</span>'+dateBadge+
         '<h3>'+safe(it.title)+'</h3><p>'+safe(it.summary)+'</p>'+link+'</div>';
     }).join("");
-    status.textContent = cachedAt
-      ? "Daily herd report · gathered "+new Date(cachedAt).toLocaleString()+" · refreshes once a day"
-      : "Fresh from the pasture · "+new Date().toLocaleTimeString();
+    if(data.budgetExhausted){
+      status.textContent = "Today's news budget is used up for now — showing the latest report. Resets at midnight UTC.";
+    }else if(refresh && data.refreshed){
+      status.textContent = "New sources rounded up · "+new Date().toLocaleTimeString();
+    }else if(cachedAt){
+      status.textContent = "Daily herd report · gathered "+new Date(cachedAt).toLocaleString()+" · tap the button for new sources";
+    }else{
+      status.textContent = "Fresh from the pasture · "+new Date().toLocaleTimeString();
+    }
   }catch(e){
     const msg = e && e.message ? e.message : "feed error";
     if(/failed to fetch|networkerror|load failed/i.test(msg) && !apiKey){
@@ -1039,7 +1048,7 @@ async function fetchFeed(){
     }
   }finally{
     btn.disabled = false;
-    btn.textContent = "🐂 Reload today's report";
+    btn.textContent = "🐂 Round up new sources";
   }
 }
 
