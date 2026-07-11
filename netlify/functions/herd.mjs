@@ -23,7 +23,10 @@ const DAILY_CAP_DOLLARS = 1.0;
 // claude-sonnet-4-6 pricing: $3 / 1M input tokens, $15 / 1M output tokens.
 const INPUT_COST_PER_TOKEN = 3 / 1_000_000;
 const OUTPUT_COST_PER_TOKEN = 15 / 1_000_000;
-// Anthropic's web_search tool: $10 per 1,000 searches. The prompt asks for exactly one.
+// Anthropic's web_search tool: $10 per 1,000 searches. The prompt asks for one
+// search normally, or a second targeted one only if the first didn't surface
+// enough recent (today/yesterday) coverage — cost tracking below multiplies
+// this fee by the actual number of searches performed, not a fixed count.
 const WEB_SEARCH_FLAT_FEE = 0.01;
 
 function utcDateKey(ts) {
@@ -116,14 +119,18 @@ export default async (req) => {
 
   const prompt =
     "Today's date is " + todayUtc + " (UTC). " +
-    "Do ONE web search for the latest news and X/Twitter chatter about the $ANSEM Solana memecoin 'The Black Bull'" +
-    (ca ? " (contract " + ca + ")" : "") + "." + avoidClause + " " +
+    "Search for the latest news and X/Twitter chatter about the $ANSEM Solana memecoin 'The Black Bull'" +
+    (ca ? " (contract " + ca + ")" : "") + ". " +
+    "You need at least 2 stories dated " + todayUtc + " or " + yesterdayUtc + " in your final answer. " +
+    "Start with one broad search. If it doesn't turn up at least 2 items from " + todayUtc + " or " + yesterdayUtc + ", " +
+    "do a second, more targeted search (e.g. adding \"today\" or \"" + todayUtc + "\" to the query, or searching X/Twitter specifically) before giving up on that requirement — " +
+    "but don't do a second search if the first one already found enough recent coverage. " +
+    "Only settle for fewer than 2 recent items if a second targeted search still turns up nothing from " + todayUtc + " or " + yesterdayUtc + "." +
+    avoidClause + " " +
     "Then output ONLY a raw JSON array — no markdown, no backticks, no preamble, no trailing text — of 3 to 4 objects: " +
     '[{"title":"short headline (max 10 words)","summary":"one short sentence","source":"site or @handle","url":"https://...","tag":"news","date":"YYYY-MM-DD"}]. ' +
     '"date" is the article or post\'s publish date, taken from the search result — use your best reading of it, and if a story truly has no determinable date, omit the "date" field entirely rather than guessing. ' +
-    "At least 2 of the items must be dated " + todayUtc + " or " + yesterdayUtc + " — actively search for the most recent coverage available and prioritize it. " +
-    "The rest can be strong stories from the last 3-4 days if nothing else fresher exists. " +
-    "Only if you truly cannot find any coverage from " + todayUtc + " or " + yesterdayUtc + " after searching, fall back to the most recent items you did find and it's fine to have fewer than 2 recent ones. " +
+    "The 1-2 slots not filled by today/yesterday stories can be strong coverage from the last 3-4 days. " +
     'Allowed tag values: "news", "tweet", "alpha". Keep every field brief so the array is small. ' +
     "When multiple sources cover the same story, prefer larger, well-known outlets (e.g. CoinDesk, Cointelegraph, The Block, Decrypt, Bloomberg) and high-profile X accounts — but still include smaller sources when they have the freshest or only coverage. " +
     "If nothing recent is found at all, return one item saying so.";
@@ -149,10 +156,11 @@ export default async (req) => {
     }
 
     const usage = payload.usage || {};
+    const searchCount = usage.server_tool_use?.web_search_requests ?? 1;
     const cost =
       (usage.input_tokens || 0) * INPUT_COST_PER_TOKEN +
       (usage.output_tokens || 0) * OUTPUT_COST_PER_TOKEN +
-      WEB_SEARCH_FLAT_FEE;
+      searchCount * WEB_SEARCH_FLAT_FEE;
 
     const fetchedAt = Date.now();
     if (store) {
