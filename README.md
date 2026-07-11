@@ -15,10 +15,14 @@ Live memecoin dashboard for $ANSEM on Solana.
 - **Candlestick chart** — GeckoTerminal OHLCV (15m / 1H / 4H / 1D), redrawn
   every minute.
 - **AI Herd Report** — Claude does a live web search for $ANSEM news and CT
-  chatter, auto-loaded on page open. Served through a Netlify function that
-  caches the result in Netlify Blobs for 24 hours, so the Anthropic API is
-  called **at most once per day total**, no matter how many visitors load or
-  refresh the page.
+  chatter, auto-loaded on page open (served from a 24h Netlify Blobs cache,
+  so passive page loads never cost more than one API call a day). The
+  **"Round up new sources"** button asks for a genuinely fresh search that
+  avoids repeating the stories already shown — but every live fetch (passive
+  or button-triggered) draws from one shared daily budget, hard-capped at
+  $1.00/day across all visitors and both deploy contexts. Once the cap is
+  hit, the button falls back to the last cached report until the budget
+  resets at UTC midnight.
 - **Position calculator** — visitors enter their holdings (and optional average
   buy price) to see live value, cost basis, P/L, and return %. Values persist
   in the visitor's own browser (localStorage) across visits.
@@ -66,14 +70,20 @@ Netlify under Build & deploy → Build hooks if ever needed.
 - The news cache lives in the Netlify Blobs store `herd-cache` (key `latest`)
   and is shared by production and branch deploys — delete the blob or wait 24h
   to force a fresh report.
+- The shared daily spend tracker lives in the same store (key `budget`),
+  keyed by UTC date. Check it any time with
+  `netlify blobs:get herd-cache budget` — `{"date":"YYYY-MM-DD","spentDollars":N,"calls":N}`.
+  It resets itself automatically the first time a new UTC day is seen.
 
 ## Key safety notes
 
 - **Never** paste the key into index.html or commit it anywhere in the repo.
 - The proxy's prompt is hardcoded server-side and only accepts a validated
   Solana contract address as input, so the endpoint can't be repurposed as a
-  general Claude proxy. The 24h cache means even hammering the endpoint costs
-  at most one small API call (~1000 tokens) per day.
+  general Claude proxy. Passive loads are 24h-cached; the refresh button can
+  trigger live fetches, but a shared $1.00/day hard cap (real measured cost,
+  not an estimate — see Configuration) bounds worst-case spend regardless of
+  how many times anyone presses it.
 - If you ever suspect the key leaked, revoke it in the Anthropic console and
   set a new one in Netlify env vars — no code changes needed.
 
@@ -93,7 +103,7 @@ Netlify under Build & deploy → Build hooks if ever needed.
 | Price, stats, buys/sells | DexScreener (public API) | 5s |
 | Candles | GeckoTerminal (public API) | 60s |
 | Holders, top-10 % | GeckoTerminal (public API) | 5 min |
-| News / Herd Report | Claude web search via Netlify function | 24h cache |
+| News / Herd Report | Claude web search via Netlify function | 24h cache, or on-demand via refresh button (shared $1/day cap) |
 
 ## Disclaimers
 
