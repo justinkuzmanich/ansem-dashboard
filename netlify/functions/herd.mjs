@@ -111,15 +111,22 @@ export default async (req) => {
       " — search for different or additional coverage instead. If genuinely nothing else recent exists, it's fine to include one of them again."
     : "";
 
+  const todayUtc = utcDateKey(Date.now());
+  const yesterdayUtc = utcDateKey(Date.now() - DAY_MS);
+
   const prompt =
+    "Today's date is " + todayUtc + " (UTC). " +
     "Do ONE web search for the latest news and X/Twitter chatter about the $ANSEM Solana memecoin 'The Black Bull'" +
     (ca ? " (contract " + ca + ")" : "") + "." + avoidClause + " " +
     "Then output ONLY a raw JSON array — no markdown, no backticks, no preamble, no trailing text — of 3 to 4 objects: " +
     '[{"title":"short headline (max 10 words)","summary":"one short sentence","source":"site or @handle","url":"https://...","tag":"news","date":"YYYY-MM-DD"}]. ' +
     '"date" is the article or post\'s publish date, taken from the search result — use your best reading of it, and if a story truly has no determinable date, omit the "date" field entirely rather than guessing. ' +
+    "At least 2 of the items must be dated " + todayUtc + " or " + yesterdayUtc + " — actively search for the most recent coverage available and prioritize it. " +
+    "The rest can be strong stories from the last 3-4 days if nothing else fresher exists. " +
+    "Only if you truly cannot find any coverage from " + todayUtc + " or " + yesterdayUtc + " after searching, fall back to the most recent items you did find and it's fine to have fewer than 2 recent ones. " +
     'Allowed tag values: "news", "tweet", "alpha". Keep every field brief so the array is small. ' +
     "When multiple sources cover the same story, prefer larger, well-known outlets (e.g. CoinDesk, Cointelegraph, The Block, Decrypt, Bloomberg) and high-profile X accounts — but still include smaller sources when they have the freshest or only coverage. " +
-    "If nothing recent is found, return one item saying so.";
+    "If nothing recent is found at all, return one item saying so.";
 
   try {
     const r = await fetch("https://api.anthropic.com/v1/messages", {
