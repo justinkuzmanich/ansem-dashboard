@@ -231,6 +231,33 @@ button{font-family:var(--font-body);cursor:pointer}
 .calc input:focus{border-color:var(--gold);outline:none}
 .calc-out{display:grid;grid-template-columns:repeat(2,1fr);gap:.7rem;margin-top:1rem}
 .calc-note{color:var(--bone-dim);font-size:.72rem;font-family:var(--font-mono);margin-top:.6rem}
+.flex-btn{
+  display:block;width:100%;margin-top:.9rem;
+  background:var(--matador);color:var(--bone);border:none;
+  font-family:var(--font-display);letter-spacing:.08em;text-transform:uppercase;
+  font-size:.95rem;padding:.8rem 1rem;border-radius:var(--radius);
+  box-shadow:0 4px 0 #8f1f16;transition:transform .08s ease;
+}
+.flex-btn:active{transform:translateY(3px);box-shadow:0 1px 0 #8f1f16}
+.flex-btn[disabled]{opacity:.65}
+
+/* ---------- whale watch ---------- */
+.whale-list{display:grid;gap:.55rem;max-height:360px;overflow-y:auto}
+.whale-row{
+  display:flex;align-items:center;gap:.65rem;
+  background:var(--ink);border:1px solid var(--ink-3);border-left:3px solid var(--ink-3);
+  border-radius:10px;padding:.6rem .8rem;
+  font-family:var(--font-mono);font-size:.8rem;color:var(--bone);text-decoration:none;
+}
+.whale-row.buy{border-left-color:var(--pump)}
+.whale-row.sell{border-left-color:var(--dump)}
+.whale-row.whale{border-color:var(--gold);box-shadow:0 0 0 1px rgba(245,185,66,.25)}
+.whale-row .ico{font-size:1rem;flex:none}
+.whale-row .amt{font-weight:700;flex:none}
+.whale-row.buy .amt{color:var(--pump)}
+.whale-row.sell .amt{color:var(--dump)}
+.whale-row .who{color:var(--bone-dim);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.whale-row .when{color:var(--bone-dim);font-size:.72rem;white-space:nowrap;flex:none}
 
 /* ---------- about / faq ---------- */
 .about p{color:var(--bone-dim);font-size:.92rem;margin-bottom:.85rem}
@@ -499,6 +526,15 @@ button{font-family:var(--font-body);cursor:pointer}
     </div>
   </div>
 
+  <!-- WHALE WATCH -->
+  <div class="sec"><span class="horn">🐋</span><h2>Whale Watch</h2></div>
+  <div class="card whale-card">
+    <div class="whale-list" id="whaleList">
+      <div class="feed-status">watching the herd for big buys…</div>
+    </div>
+    <div class="chart-note">live trades &middot; GeckoTerminal &middot; polls every 15s &middot; 🐋 = $1,000+</div>
+  </div>
+
   <!-- POSITION CALCULATOR -->
   <div class="sec"><span class="horn">🧮</span><h2>Your Position</h2></div>
   <div class="card calc">
@@ -519,6 +555,7 @@ button{font-family:var(--font-body);cursor:pointer}
       <div class="stat"><div class="lbl">Return</div><div class="val" id="calcPct">—</div></div>
     </div>
     <div class="calc-note">Uses the live price above — updates automatically every 5s. Numbers stay in your browser only. NFA.</div>
+    <button class="flex-btn" id="flexBtn" style="display:none">📸 Flex your position</button>
   </div>
 
   <div class="grid-2">
@@ -782,6 +819,7 @@ function renderCalc(){
     plEl.textContent = pctEl.textContent = "—";
     plEl.style.color = pctEl.style.color = "";
   }
+  $("flexBtn").style.display = (value!=null) ? "block" : "none";
 }
 ["calcTokens","calcBuy"].forEach(id=>{
   const el = $(id);
@@ -790,6 +828,113 @@ function renderCalc(){
     localStorage.setItem("ansem_"+id, el.value);
     renderCalc();
   });
+});
+
+/* ---------- flex card (canvas share image) ---------- */
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+
+async function buildFlexCardBlob(){
+  const tokens = parseFloat($("calcTokens").value);
+  const buy = parseFloat($("calcBuy").value);
+  const price = pair ? parseFloat(pair.priceUsd) : NaN;
+  if(!(tokens>0) || isNaN(price)) return null;
+  const value = tokens*price;
+  const cost = buy>0 ? tokens*buy : null;
+  const pl = cost!=null ? value-cost : null;
+  const ret = (cost!=null && cost>0) ? pl/cost*100 : null;
+
+  try{ await document.fonts.load("108px Anton"); await document.fonts.load("700 40px 'Space Grotesk'"); }catch(e){}
+
+  const W=1200, H=630;
+  const canvas = document.createElement("canvas");
+  canvas.width=W; canvas.height=H;
+  const ctx = canvas.getContext("2d");
+
+  ctx.fillStyle="#0e0c0a"; ctx.fillRect(0,0,W,H);
+  const glow = ctx.createRadialGradient(W*0.85,H*0.15,0,W*0.85,H*0.15,W*0.55);
+  glow.addColorStop(0,"rgba(230,59,46,.22)"); glow.addColorStop(1,"rgba(230,59,46,0)");
+  ctx.fillStyle=glow; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle="#e63b2e"; ctx.fillRect(0,H-14,W,14);
+
+  ctx.textBaseline="alphabetic";
+  ctx.textAlign="center";
+  ctx.font="230px sans-serif";
+  ctx.fillText("🐂", 230, H/2+80);
+
+  ctx.textAlign="left";
+  ctx.fillStyle="#e63b2e";
+  ctx.font="108px Anton, sans-serif";
+  ctx.fillText("$ANSEM", 470, 182);
+  ctx.fillStyle="#f2ead9";
+  ctx.fillText("$ANSEM", 464, 176);
+
+  ctx.fillStyle="#f5b942";
+  ctx.font="700 26px 'Space Grotesk', sans-serif";
+  ctx.fillText("★ MY POSITION · THE BLACK BULL ★", 464, 222);
+
+  ctx.fillStyle="#b8ad97";
+  ctx.font="600 22px 'Space Grotesk', sans-serif";
+  ctx.fillText("VALUE NOW", 464, 282);
+  ctx.fillStyle="#f2ead9";
+  ctx.font="800 78px 'Space Grotesk', sans-serif";
+  ctx.fillText(fmtUsd(value), 464, 355);
+
+  if(pl!=null){
+    const up = pl>=0;
+    ctx.fillStyle = up ? "#43d97a" : "#ff5c4d";
+    ctx.font="700 38px 'Space Grotesk', sans-serif";
+    ctx.fillText((up?"+":"−")+fmtUsd(Math.abs(pl))+"  ("+(ret>=0?"+":"−")+Math.abs(ret).toFixed(1)+"%)", 464, 408);
+  }
+
+  ctx.fillStyle="#b8ad97";
+  ctx.font="500 22px 'Space Grotesk', sans-serif";
+  ctx.fillText(Math.round(tokens).toLocaleString()+" $ANSEM @ "+fmtPrice(price), 464, pl!=null ? 452 : 410);
+
+  ctx.fillStyle="#e63b2e";
+  roundRect(ctx,464,500,300,58,29); ctx.fill();
+  ctx.fillStyle="#f2ead9";
+  ctx.font="700 26px 'Space Grotesk', sans-serif";
+  ctx.textBaseline="middle";
+  ctx.fillText("ansemdash.com", 488, 530);
+
+  return await new Promise(res=>canvas.toBlob(res,"image/png"));
+}
+
+$("flexBtn").addEventListener("click", async ()=>{
+  const btn = $("flexBtn");
+  const orig = btn.textContent;
+  btn.textContent = "rendering…"; btn.disabled = true;
+  try{
+    const blob = await buildFlexCardBlob();
+    if(!blob) return;
+    track("flex_share");
+    const file = new File([blob], "ansem-position.png", {type:"image/png"});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({
+        files:[file],
+        title:"My $ANSEM position",
+        text:"I'm bullish on $ANSEM 🐂 The Black Bull on Solana."
+      });
+    }else{
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = "ansem-position.png";
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+      window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(
+        "I'm bullish on $ANSEM 🐂 The Black Bull on Solana.\n\nView $ANSEM Dashboard: https://ansemdash.com"
+      ), "_blank", "noopener");
+    }
+  }catch(e){ /* user cancelled share — nothing to do */ }
+  finally{ btn.textContent = orig; btn.disabled = false; }
 });
 
 /* ---------- hero CA copy ---------- */
@@ -819,6 +964,59 @@ async function loadHolders(){
     const t = h && h.distribution_percentage && h.distribution_percentage.top_10;
     if(t!=null) $("top10").textContent = Number(t).toFixed(1)+"%";
   }catch(e){ /* leave the previous value in place */ }
+}
+
+/* ---------- whale watch (geckoterminal live pool trades) ---------- */
+const WHALE_MIN_USD = 25;   // filter out dust trades
+const WHALE_BADGE_USD = 1000; // trades at/above this get a 🐋 badge
+const WHALE_MAX_ROWS = 25;
+const whaleSeen = new Set();
+let whaleRows = [];
+
+function timeAgo(iso){
+  const s = Math.max(0, Math.round((Date.now() - new Date(iso).getTime())/1000));
+  if(s<60) return s+"s ago";
+  if(s<3600) return Math.round(s/60)+"m ago";
+  return Math.round(s/3600)+"h ago";
+}
+
+async function loadWhales(){
+  if(!pair) return;
+  try{
+    const r = await fetch("https://api.geckoterminal.com/api/v2/networks/solana/pools/"+pair.pairAddress+"/trades",
+      {headers:{Accept:"application/json;version=20230302"}});
+    if(!r.ok) throw new Error("gt "+r.status);
+    const j = await r.json();
+    const fresh = (j.data||[])
+      .map(t=>t.attributes)
+      .filter(a => a && a.tx_hash && !whaleSeen.has(a.tx_hash) && parseFloat(a.volume_in_usd)>=WHALE_MIN_USD);
+    if(!fresh.length){
+      if(!whaleRows.length) $("whaleList").innerHTML = '<div class="feed-status">no big buys yet — keep watching 🐂</div>';
+      return;
+    }
+    fresh.forEach(a=>whaleSeen.add(a.tx_hash));
+    fresh.sort((a,b)=> new Date(b.block_timestamp) - new Date(a.block_timestamp));
+    whaleRows = fresh.concat(whaleRows).slice(0, WHALE_MAX_ROWS);
+    renderWhales();
+  }catch(e){ /* leave previous rows in place */ }
+}
+
+function renderWhales(){
+  if(!whaleRows.length) return;
+  $("whaleList").innerHTML = whaleRows.map(a=>{
+    const isBuy = a.kind === "buy";
+    const usd = parseFloat(a.volume_in_usd)||0;
+    const isWhale = usd >= WHALE_BADGE_USD;
+    const tokens = isBuy ? parseFloat(a.to_token_amount) : parseFloat(a.from_token_amount);
+    const icon = isWhale ? "🐋" : (isBuy ? "🟢" : "🔴");
+    return '<a class="whale-row '+(isBuy?"buy":"sell")+(isWhale?" whale":"")+'" ' +
+      'href="https://solscan.io/tx/'+a.tx_hash+'" target="_blank" rel="noopener" data-track="whale_tx_click">'+
+      '<span class="ico">'+icon+'</span>'+
+      '<span class="amt">'+(isBuy?"+":"−")+fmtUsd(usd)+'</span>'+
+      '<span class="who">'+(isBuy?"bought":"sold")+' '+Math.round(tokens).toLocaleString()+' $ANSEM &middot; '+short(a.tx_from_address)+'</span>'+
+      '<span class="when">'+timeAgo(a.block_timestamp)+'</span>'+
+    '</a>';
+  }).join("");
 }
 
 /* ---------- geckoterminal candles ---------- */
@@ -1086,6 +1284,9 @@ $("tweetBtn").addEventListener("click", ()=>track("tweet_click"));
 $("heroCaCopy").addEventListener("click", ()=>track("ca_copy",{location:"hero"}));
 $("copyBtn").addEventListener("click", ()=>track("donate_copy"));
 $("feedBtn").addEventListener("click", ()=>track("feed_refresh"));
+$("whaleList").addEventListener("click", (e)=>{
+  if(e.target.closest('[data-track="whale_tx_click"]')) track("whale_tx_click");
+});
 document.querySelector('a[title^="Ansem on X"]').addEventListener("click", ()=>track("ansem_profile_click"));
 let calcTracked = false;
 ["calcTokens","calcBuy"].forEach(id=>$(id).addEventListener("input", ()=>{
@@ -1114,10 +1315,12 @@ $("copyBtn").addEventListener("click", async ()=>{
   await refreshPair();
   loadCandles();
   loadHolders();
+  loadWhales();
   fetchFeed(); // auto-load the daily herd report (served from a 24h server-side cache)
   setInterval(refreshPair, 5000);
   setInterval(loadCandles, 60000);
   setInterval(loadHolders, 300000); // holders move slowly — refresh every 5 min
+  setInterval(loadWhales, 15000);
 })();
 </script>
 </body>
