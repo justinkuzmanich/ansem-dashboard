@@ -26,6 +26,14 @@ Live memecoin dashboard for $ANSEM on Solana.
 - **Position calculator** — visitors enter their holdings (and optional average
   buy price) to see live value, cost basis, P/L, and return %. Values persist
   in the visitor's own browser (localStorage) across visits.
+- **Flex card** — once a position is entered, a "Flex your position" button
+  renders a shareable canvas image (value, P/L, return %) and shares it via
+  the Web Share API where supported, falling back to a download plus a
+  pre-filled tweet. Entirely client-side, no server cost.
+- **Whale Watch** — a live feed of recent buys/sells pulled straight from
+  GeckoTerminal's public pool-trades endpoint (polled every 15s, deduped by
+  tx hash), color-coded green/red with a 🐋 badge on trades $1,000+, linking
+  out to Solscan. Keyless and client-side, no server cost.
 - **Buy / Tweet CTAs** — Buy $ANSEM (axiom.trade) and a pre-filled bullish
   tweet with the contract address and a dashboard link.
 - **Full contract address** shown in the hero (with copy button) and under the
@@ -103,6 +111,7 @@ Netlify under Build & deploy → Build hooks if ever needed.
 | Price, stats, buys/sells | DexScreener (public API) | 5s |
 | Candles | GeckoTerminal (public API) | 60s |
 | Holders, top-10 % | GeckoTerminal (public API) | 5 min |
+| Whale Watch trades | GeckoTerminal pool trades (public API) | 15s |
 | News / Herd Report | Claude web search via Netlify function | 24h cache, or on-demand via refresh button (shared $1/day cap) |
 
 ## Disclaimers
