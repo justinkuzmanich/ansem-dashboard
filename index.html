@@ -94,8 +94,9 @@ button{font-family:var(--font-body);cursor:pointer}
 :focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 
 /* ---------- ticker tape ---------- */
+/* uses its own green, independent of --matador (which stays red elsewhere) */
 .tape{
-  background:var(--matador);
+  background:#12b76a;
   color:var(--ink);
   font-family:var(--font-display);
   letter-spacing:.06em;
@@ -108,7 +109,7 @@ button{font-family:var(--font-body);cursor:pointer}
 .tape-inner{display:inline-flex;animation:tape 30s linear infinite}
 .tape-seg{display:inline-block}
 @keyframes tape{to{transform:translateX(-50%)}}
-.tape b{color:var(--bone)}
+.tape b{color:var(--gold)}
 
 /* ---------- shell ---------- */
 .shell{max-width:1180px;margin:0 auto;padding:0 1rem 4rem}
